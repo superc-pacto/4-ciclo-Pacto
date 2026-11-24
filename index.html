@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscrições — 4º Ciclo Formativo Estadual do Pacto pela Aprendizagem</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px 12px;
+      background: #f3f6f4;
+      color: #24332b;
+      font-family: Arial, sans-serif;
+    }
+
+    .container { max-width: 760px; margin: auto; }
+
+    header {
+      background: #176b45;
+      color: white;
+      text-align: center;
+      padding: 25px 16px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    header h1 { margin: 0 0 8px; font-size: 22px; line-height: 1.3; }
+    header p { margin: 0; font-size: 15px; opacity: 0.95; }
+
+    main {
+      background: white;
+      padding: 24px;
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 5px 20px #0000000d;
+    }
+
+    .aviso {
+      padding: 14px;
+      background: #edf7f0;
+      border-left: 4px solid #238451;
+      border-radius: 5px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .badge-dia {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #e3f2fd;
+      border-left: 4px solid #1565c0;
+      color: #0d47a1;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    h2 {
+      color: #176b45;
+      font-size: 18px;
+      border-bottom: 2px solid #e2eee6;
+      padding-bottom: 8px;
+      margin-top: 26px;
+    }
+
+    .campo { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px;
+      border: 1px solid #cbd5ce;
+      border-radius: 7px;
+      background: white;
+      color: #24332b;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #a7d7b8;
+      border-color: #238451;
+    }
+
+    .resumo {
+      margin-top: 7px;
+      color: #176b45;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .resumo.esgotado { color: #9f2118; }
+
+    .botao {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      border: 0;
+      border-radius: 8px;
+      background: #176b45;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .botao:disabled { opacity: .6; cursor: not-allowed; }
+
+    .mensagem {
+      display: none;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+
+    .sucesso {
+      display: block;
+      background: #e9f7ed;
+      border: 1px solid #9dd5ad;
+      color: #155b2f;
+    }
+
+    .erro {
+      display: block;
+      background: #fff0ef;
+      border: 1px solid #efb4af;
+      color: #9f2118;
+    }
+
+    .rodape {
+      margin-top: 22px;
+      color: #6b756e;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      main { padding: 17px 13px; }
+      header h1 { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>4º Ciclo Formativo Estadual do Pacto pela Aprendizagem</h1>
+    <p>Inscrição nas Atividades — Comunicação Oral e Pôster</p>
+  </header>
+
+  <main>
+    <div class="aviso">
+      <strong>Atenção!</strong> É permitida apenas <strong>1 inscrição por CPF</strong>.
+      Quem escolher <strong>Comunicação Oral</strong> pela manhã participará automaticamente de <strong>Pôster</strong> à tarde (e vice-versa).
+    </div>
+
+    <form id="formulario" onsubmit="enviarInscricao(event)">
+      <h2>Dados pessoais</h2>
+
+      <div class="campo">
+        <label for="nome">Nome completo *</label>
+        <input id="nome" name="nome" type="text" placeholder="Digite seu nome completo" required>
+      </div>
+
+      <div class="campo">
+        <label for="cpf">CPF *</label>
+        <input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="off" required>
+        <small>Digite os 11 números do CPF.</small>
+      </div>
+
+      <div class="campo">
+        <label for="eixo">Eixo *</label>
+        <select id="eixo" name="eixo" required>
+          <option value="">Selecione seu eixo</option>
+          <option value="Gestão">Gestão</option>
+          <option value="RENALFA">RENALFA</option>
+          <option value="Alfabetização">Alfabetização</option>
+          <option value="Anos Finais">Anos Finais</option>
+          <option value="Recomposição das Aprendizagens - Matemática">Recomposição das Aprendizagens - Matemática</option>
+          <option value="Recomposição das Aprendizagens - Português">Recomposição das Aprendizagens - Português</option>
+          <option value="Educação Infantil">Educação Infantil</option>
+        </select>
+        <div id="infoDia" class="badge-dia"></div>
+      </div>
+
+      <div class="campo">
+        <label for="funcao">Função *</label>
+        <select id="funcao" name="funcao" required>
+          <option value="">Selecione sua função</option>
+          <option value="Articulador(a) Pedagógico Regional">Articulador(a) Pedagógico Regional</option>
+          <option value="Articulador(a) Pedagógico Municipal">Articulador(a) Pedagógico Municipal</option>
+          <option value="Focal Municipal">Focal Municipal</option>
+        </select>
+      </div>
+
+      <h2>Escolha dos turnos</h2>
+
+      <div class="campo">
+        <label for="manha">Atividade — Manhã *</label>
+        <select id="manha" name="manha" required disabled>
+          <option value="">Selecione primeiro o seu Eixo</option>
+        </select>
+        <div id="resumoManha" class="resumo"></div>
+      </div>
+
+      <div class="campo">
+        <label for="tarde">Atividade — Tarde (preenchida automaticamente) *</label>
+        <select id="tarde" name="tarde" required disabled>
+          <option value="">Selecione primeiro o seu Eixo</option>
+        </select>
+        <div id="resumoTarde" class="resumo"></div>
+      </div>
+
+      <button id="botaoEnviar" class="botao" type="submit" disabled>
+        Confirmar inscrição
+      </button>
+
+      <div id="mensagem" class="mensagem" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="rodape">
+      4º Ciclo Formativo Estadual do Pacto pela Aprendizagem
+    </div>
+  </main>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const API_URL = '/.netlify/functions/api';
+
+  const MAPA_DIAS = {
+    'Gestão': '01/12',
+    'RENALFA': '01/12',
+    'Alfabetização': '01/12',
+    'Anos Finais': '01/12',
+    'Recomposição das Aprendizagens - Matemática': '04/12',
+    'Recomposição das Aprendizagens - Português': '04/12',
+    'Educação Infantil': '04/12'
+  };
+
+  let disponibilidade = null;
+  let enviando = false;
+
+  // Máscara visual de CPF
+  $('cpf').addEventListener('input', function () {
+    const n = this.value.replace(/\D/g, '').slice(0, 11);
+    let f = n;
+    if (n.length > 9) f = n.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+    else if (n.length > 6) f = n.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+    else if (n.length > 3) f = n.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+    this.value = f;
+  });
+
+  function mostrarMensagem(texto, tipo) {
+    $('mensagem').textContent = texto;
+    $('mensagem').className = 'mensagem ' + tipo;
+  }
+
+  function limparMensagem() {
+    $('mensagem').textContent = '';
+    $('mensagem').className = 'mensagem';
+  }
+
+  async function chamarApi(payload) {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  async function carregarVagas() {
+    try {
+      const dados = await chamarApi({ action: 'disponibilidade' });
+      if (!dados.sucesso) throw new Error(dados.erro || 'Erro ao consultar vagas.');
+      disponibilidade = dados.disponibilidade;
+      atualizarOpcoesPorEixo();
+    } catch (erro) {
+      mostrarMensagem(erro.message || 'Não foi possível carregar as vagas. Atualize a página.', 'erro');
+    }
+  }
+
+  function atualizarOpcoesPorEixo() {
+    const eixo = $('eixo').value;
+    const dia = MAPA_DIAS[eixo];
+    const infoDia = $('infoDia');
+
+    if (!dia || !disponibilidade || !disponibilidade[dia]) {
+      infoDia.style.display = 'none';
+      $('manha').innerHTML = '<option value="">Selecione primeiro o seu Eixo</option>';
+      $('tarde').innerHTML = '<option value="">Selecione primeiro o seu Eixo</option>';
+      $('manha').disabled = true;
+      $('tarde').disabled = true;
+      $('resumoManha').textContent = '';
+      $('resumoTarde').textContent = '';
+      $('botaoEnviar').disabled = true;
+      return;
+    }
+
+    const vagasDia = disponibilidade[dia];
+    infoDia.textContent = 'Seu dia de participação: ' + vagasDia.rotulo;
+    infoDia.style.display = 'block';
+
+    const montarSelect = (selectEl, vagasTurno) => {
+      const valorAtual = selectEl.value;
+      selectEl.innerHTML = '<option value="">Selecione uma opção</option>';
+
+      ['Comunicação Oral', 'Pôster'].forEach(mod => {
+        const qtd = vagasTurno[mod];
+        const opt = document.createElement('option');
+        opt.value = mod;
+        opt.disabled = qtd <= 0;
+        opt.textContent = qtd <= 0
+          ? `ESGOTADA — ${mod}`
+          : `${mod} (${qtd} vagas disponíveis)`;
+        selectEl.appendChild(opt);
+      });
+
+      if (valorAtual && vagasTurno[valorAtual] > 0) {
+        selectEl.value = valorAtual;
+      }
+      selectEl.disabled = false;
+    };
+
+    montarSelect($('manha'), vagasDia.manha);
+    montarSelect($('tarde'), vagasDia.tarde);
+    atualizarResumosEBotao();
+  }
+
+  function sincronizarTurnos(origem) {
+    limparMensagem();
+    const outro = origem === 'manha' ? 'tarde' : 'manha';
+    const valor = $(origem).value;
+
+    if (!valor) {
+      $(outro).value = '';
+    } else {
+      const oposto = valor === 'Comunicação Oral' ? 'Pôster' : 'Comunicação Oral';
+      $(outro).value = oposto;
+    }
+    atualizarResumosEBotao();
+  }
+
+  function atualizarResumosEBotao() {
+    const dia = MAPA_DIAS[$('eixo').value];
+    if (!dia || !disponibilidade) return;
+
+    const vagasDia = disponibilidade[dia];
+    const m = $('manha').value;
+    const t = $('tarde').value;
+
+    const qtdM = m ? vagasDia.manha[m] : null;
+    const qtdT = t ? vagasDia.tarde[t] : null;
+
+    $('resumoManha').textContent = m ? `${qtdM} vaga(s) disponível(is) pela manhã` : '';
+    $('resumoManha').className = 'resumo' + (qtdM === 0 ? ' esgotado' : '');
+
+    $('resumoTarde').textContent = t ? `${qtdT} vaga(s) disponível(is) à tarde` : '';
+    $('resumoTarde').className = 'resumo' + (qtdT === 0 ? ' esgotado' : '');
+
+    const valido = !enviando && m && t && m !== t && qtdM > 0 && qtdT > 0;
+    $('botaoEnviar').disabled = !valido;
+  }
+
+  $('eixo').addEventListener('change', () => {
+    limparMensagem();
+    $('manha').value = '';
+    $('tarde').value = '';
+    atualizarOpcoesPorEixo();
+  });
+
+  $('manha').addEventListener('change', () => sincronizarTurnos('manha'));
+  $('tarde').addEventListener('change', () => sincronizarTurnos('tarde'));
+
+  async function enviarInscricao(event) {
+    event.preventDefault();
+    if (enviando) return;
+    limparMensagem();
+
+    const cpf = $('cpf').value.replace(/\D/g, '');
+    if (cpf.length !== 11) {
+      mostrarMensagem('O CPF precisa ter exatamente 11 dígitos.', 'erro');
+      $('cpf').focus();
+      return;
+    }
+
+    enviando = true;
+    $('botaoEnviar').disabled = true;
+    $('botaoEnviar').textContent = 'Confirmando inscrição...';
+
+    try {
+      const res = await chamarApi({
+        action: 'inscrever',
+        form: {
+          nome: $('nome').value.trim(),
+          cpf: cpf,
+          eixo: $('eixo').value,
+          funcao: $('funcao').value,
+          manha: $('manha').value,
+          tarde: $('tarde').value
+        }
+      });
+
+      if (res.sucesso) {
+        $('formulario').reset();
+        $('infoDia').style.display = 'none';
+        mostrarMensagem(
+          `Inscrição confirmada, ${res.nome}! Dia ${res.dia} — Manhã: ${res.manha} | Tarde: ${res.tarde}.`,
+          'sucesso'
+        );
+      } else {
+        mostrarMensagem(res.erro || 'Não foi possível confirmar a inscrição.', 'erro');
+      }
+    } catch (erro) {
+      mostrarMensagem('Erro de conexão. Tente novamente.', 'erro');
+    } finally {
+      enviando = false;
+      $('botaoEnviar').textContent = 'Confirmar inscrição';
+      await carregarVagas();
+    }
+  }
+
+  carregarVagas();
+</script>
+</body>
+</html>
