@@ -501,26 +501,14 @@
           turma: $('turma').value
         }
       });
-
-      if (res.sucesso) {
+if (res.sucesso) {
         $('formulario').reset();
         $('infoDia').style.display = 'none';
         $('blocoTurma').style.display = 'none';
-
-        const linkSala = 'https://datastudio.google.com/reporting/725e655e-2842-439d-ba49-acc13fe93a33';
         mostrarMensagem(
-          `Inscrição confirmada, ${res.nome}! Dia ${res.dia} — Manhã: ${res.manha} | Tarde: ${res.tarde} (${res.turma}). Consulte sua sala em breve pelo link: `,
+          `Inscrição confirmada, ${res.nome}! Dia ${res.dia} — Manhã: ${res.manha} | Tarde: ${res.tarde} (${res.turma}).`,
           'sucesso'
         );
-        const a = document.createElement('a');
-        a.href = linkSala;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.textContent = linkSala;
-        a.style.color = '#155b2f';
-        a.style.fontWeight = 'bold';
-        a.style.wordBreak = 'break-all';
-        $('mensagem').appendChild(a);
       } else {
         mostrarMensagem(res.erro || 'Não foi possível confirmar a inscrição.', 'erro');
       }
