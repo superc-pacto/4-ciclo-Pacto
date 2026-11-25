@@ -135,10 +135,7 @@
       transition: background 0.2s;
     }
 
-    .botao:hover:not(:disabled) {
-      background: #14264f;
-    }
-
+    .botao:hover:not(:disabled) { background: #14264f; }
     .botao:disabled { opacity: .55; cursor: not-allowed; }
 
     .mensagem {
@@ -192,7 +189,7 @@
   <main>
     <div class="aviso">
       <strong>Atenção!</strong> É permitida apenas <strong>1 inscrição por CPF</strong>.
-      Quem escolher <strong>Comunicação Oral</strong> pela manhã participará automaticamente de <strong>Pôster</strong> à tarde (e vice-versa).
+      Quem escolher <strong>Comunicação Oral</strong> pela manhã participará de <strong>Pôster</strong> à tarde (e vice-versa), escolhendo sua <strong>Turma (1 a 12)</strong> para a Comunicação Oral.
     </div>
 
     <form id="formulario" onsubmit="enviarInscricao(event)">
@@ -234,14 +231,13 @@
         </select>
       </div>
 
-      <h2>Escolha dos turnos</h2>
+      <h2>Escolha dos turnos e turma</h2>
 
       <div class="campo">
         <label for="manha">Atividade — Manhã *</label>
         <select id="manha" name="manha" required disabled>
           <option value="">Selecione primeiro o seu Eixo</option>
         </select>
-        <div id="resumoManha" class="resumo"></div>
       </div>
 
       <div class="campo">
@@ -249,7 +245,14 @@
         <select id="tarde" name="tarde" required disabled>
           <option value="">Selecione primeiro o seu Eixo</option>
         </select>
-        <div id="resumoTarde" class="resumo"></div>
+      </div>
+
+      <div class="campo" id="blocoTurma" style="display: none;">
+        <label id="labelTurma" for="turma">Turma da Comunicação Oral *</label>
+        <select id="turma" name="turma" required disabled>
+          <option value="">Selecione uma turma</option>
+        </select>
+        <div id="resumoTurma" class="resumo"></div>
       </div>
 
       <button id="botaoEnviar" class="botao" type="submit" disabled>
@@ -301,6 +304,10 @@
     $('mensagem').className = 'mensagem';
   }
 
+  function totalVagasTurno(mapaTurmas) {
+    return Object.values(mapaTurmas || {}).reduce((acc, v) => acc + v, 0);
+  }
+
   async function chamarApi(payload) {
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -332,40 +339,44 @@
       $('tarde').innerHTML = '<option value="">Selecione primeiro o seu Eixo</option>';
       $('manha').disabled = true;
       $('tarde').disabled = true;
-      $('resumoManha').textContent = '';
-      $('resumoTarde').textContent = '';
+      $('blocoTurma').style.display = 'none';
+      $('turma').disabled = true;
+      $('resumoTurma').textContent = '';
       $('botaoEnviar').disabled = true;
       return;
     }
 
     const vagasDia = disponibilidade[dia];
-    infoDia.textContent = 'Seu dia de participação: ' + vagasDia.rotulo;
+    const totalOralManha = totalVagasTurno(vagasDia.manha);
+    const totalOralTarde = totalVagasTurno(vagasDia.tarde);
+
+    infoDia.textContent = `Seu dia de participação: ${vagasDia.rotulo} (até ${vagasDia.limitePorTurma} vagas por turma)`;
     infoDia.style.display = 'block';
 
-    const montarSelect = (selectEl, vagasTurno) => {
+    const montarSelectAtividade = (selectEl, oralDisponivel, posterDisponivel) => {
       const valorAtual = selectEl.value;
       selectEl.innerHTML = '<option value="">Selecione uma opção</option>';
 
-      ['Comunicação Oral', 'Pôster'].forEach(mod => {
-        const qtd = vagasTurno[mod];
-        const opt = document.createElement('option');
-        opt.value = mod;
-        opt.disabled = qtd <= 0;
-        opt.textContent = qtd <= 0
-          ? `ESGOTADA — ${mod}`
-          : `${mod} (${qtd} vagas disponíveis)`;
-        selectEl.appendChild(opt);
-      });
+      const optOral = document.createElement('option');
+      optOral.value = 'Comunicação Oral';
+      optOral.disabled = !oralDisponivel;
+      optOral.textContent = oralDisponivel ? 'Comunicação Oral' : 'ESGOTADA — Comunicação Oral';
+      selectEl.appendChild(optOral);
 
-      if (valorAtual && vagasTurno[valorAtual] > 0) {
-        selectEl.value = valorAtual;
-      }
+      const optPoster = document.createElement('option');
+      optPoster.value = 'Pôster';
+      optPoster.disabled = !posterDisponivel;
+      optPoster.textContent = posterDisponivel ? 'Pôster' : 'ESGOTADA — Pôster (sem vagas na Oral no outro turno)';
+      selectEl.appendChild(optPoster);
+
+      if (valorAtual) selectEl.value = valorAtual;
       selectEl.disabled = false;
     };
 
-    montarSelect($('manha'), vagasDia.manha);
-    montarSelect($('tarde'), vagasDia.tarde);
-    atualizarResumosEBotao();
+    montarSelectAtividade($('manha'), totalOralManha > 0, totalOralTarde > 0);
+    montarSelectAtividade($('tarde'), totalOralTarde > 0, totalOralManha > 0);
+
+    atualizarTurmas();
   }
 
   function sincronizarTurnos(origem) {
@@ -376,42 +387,90 @@
     if (!valor) {
       $(outro).value = '';
     } else {
-      const oposto = valor === 'Comunicação Oral' ? 'Pôster' : 'Comunicação Oral';
-      $(outro).value = oposto;
+      $(outro).value = valor === 'Comunicação Oral' ? 'Pôster' : 'Comunicação Oral';
     }
-    atualizarResumosEBotao();
+    $('turma').value = '';
+    atualizarTurmas();
   }
 
-  function atualizarResumosEBotao() {
+  function atualizarTurmas() {
     const dia = MAPA_DIAS[$('eixo').value];
-    if (!dia || !disponibilidade) return;
-
-    const vagasDia = disponibilidade[dia];
     const m = $('manha').value;
     const t = $('tarde').value;
 
-    const qtdM = m ? vagasDia.manha[m] : null;
-    const qtdT = t ? vagasDia.tarde[t] : null;
+    if (!dia || !disponibilidade || !m || !t || m === t) {
+      $('blocoTurma').style.display = 'none';
+      $('turma').disabled = true;
+      $('resumoTurma').textContent = '';
+      $('botaoEnviar').disabled = true;
+      return;
+    }
 
-    $('resumoManha').textContent = m ? `${qtdM} vaga(s) disponível(is) pela manhã` : '';
-    $('resumoManha').className = 'resumo' + (qtdM === 0 ? ' esgotado' : '');
+    const turnoOral = m === 'Comunicação Oral' ? 'manha' : 'tarde';
+    const rotuloTurno = turnoOral === 'manha' ? 'Manhã' : 'Tarde';
+    const mapaTurmas = disponibilidade[dia][turnoOral];
+    const turmaAtual = $('turma').value;
 
-    $('resumoTarde').textContent = t ? `${qtdT} vaga(s) disponível(is) à tarde` : '';
-    $('resumoTarde').className = 'resumo' + (qtdT === 0 ? ' esgotado' : '');
+    $('labelTurma').textContent = `Escolha sua Turma (Comunicação Oral — ${rotuloTurno}) *`;
+    $('turma').innerHTML = '<option value="">Selecione uma turma</option>';
 
-    const valido = !enviando && m && t && m !== t && qtdM > 0 && qtdT > 0;
-    $('botaoEnviar').disabled = !valido;
+    Object.keys(mapaTurmas).forEach(nomeTurma => {
+      const qtd = mapaTurmas[nomeTurma];
+      const opt = document.createElement('option');
+      opt.value = nomeTurma;
+      opt.disabled = qtd <= 0;
+      opt.textContent = qtd <= 0
+        ? `ESGOTADA — ${nomeTurma}`
+        : `${nomeTurma} (${qtd} vagas disponíveis)`;
+      $('turma').appendChild(opt);
+    });
+
+    if (turmaAtual && mapaTurmas[turmaAtual] > 0) {
+      $('turma').value = turmaAtual;
+    }
+
+    $('turma').disabled = false;
+    $('blocoTurma').style.display = 'block';
+    atualizarResumoEBotao();
+  }
+
+  function atualizarResumoEBotao() {
+    const dia = MAPA_DIAS[$('eixo').value];
+    const m = $('manha').value;
+    const t = $('tarde').value;
+    const turma = $('turma').value;
+
+    if (!dia || !disponibilidade || !m || !t || !turma) {
+      $('resumoTurma').textContent = '';
+      $('botaoEnviar').disabled = true;
+      return;
+    }
+
+    const turnoOral = m === 'Comunicação Oral' ? 'manha' : 'tarde';
+    const qtd = disponibilidade[dia][turnoOral][turma];
+
+    $('resumoTurma').textContent = qtd > 0
+      ? `${turma}: ${qtd} vaga(s) disponível(is)`
+      : `${turma}: ESGOTADA`;
+    $('resumoTurma').className = 'resumo' + (qtd <= 0 ? ' esgotado' : '');
+
+    $('botaoEnviar').disabled = enviando || qtd <= 0;
   }
 
   $('eixo').addEventListener('change', () => {
     limparMensagem();
     $('manha').value = '';
     $('tarde').value = '';
+    $('turma').value = '';
     atualizarOpcoesPorEixo();
   });
 
   $('manha').addEventListener('change', () => sincronizarTurnos('manha'));
   $('tarde').addEventListener('change', () => sincronizarTurnos('tarde'));
+  $('turma').addEventListener('change', () => {
+    limparMensagem();
+    atualizarResumoEBotao();
+  });
 
   async function enviarInscricao(event) {
     event.preventDefault();
@@ -438,16 +497,19 @@
           eixo: $('eixo').value,
           funcao: $('funcao').value,
           manha: $('manha').value,
-          tarde: $('tarde').value
+          tarde: $('tarde').value,
+          turma: $('turma').value
         }
       });
 
       if (res.sucesso) {
         $('formulario').reset();
         $('infoDia').style.display = 'none';
+        $('blocoTurma').style.display = 'none';
+
         const linkSala = 'https://datastudio.google.com/reporting/725e655e-2842-439d-ba49-acc13fe93a33';
         mostrarMensagem(
-          `Inscrição confirmada, ${res.nome}! Dia ${res.dia} — Manhã: ${res.manha} | Tarde: ${res.tarde}. Consulte sua sala em breve pelo link: `,
+          `Inscrição confirmada, ${res.nome}! Dia ${res.dia} — Manhã: ${res.manha} | Tarde: ${res.tarde} (${res.turma}). Consulte sua sala em breve pelo link: `,
           'sucesso'
         );
         const a = document.createElement('a');
